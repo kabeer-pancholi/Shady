@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            min-height: 100vh;
+            padding: 1.5rem;
+            background-color: #242222;
+            font-family: "Google Sans", sans-serif;
+        }
+
+        .main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            gap: 2rem;
+        }
+
+        /* ── Logo ── */
+        .logo {
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(14px) saturate(160%);
+            -webkit-backdrop-filter: blur(14px) saturate(160%);
+            box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.09) inset, 0 1px 8px rgba(0, 0, 0, 0.55);
+            border: 0.5px solid rgba(255, 255, 255, 0.08);
+            border-radius: 100px;
+            padding: 0.7rem 1.4rem;
+            width: fit-content;
+        }
+
+        .logo-text {
+            font-size: 1.316rem;
+            color: rgba(255, 255, 255, 0.90);
+            font-family: "Google Sans", serif;
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+
+        /* ── Controls bar ── */
+        .controls-bar {
+            position: relative;
+            z-index: 100;
+            display: flex;
+            align-items: stretch;
+            /* all children fill bar height uniformly */
+            gap: 8px;
+            padding: 10px;
+            width: 100%;
+            max-width: 860px;
+            /* black glass */
+            background: rgba(0, 0, 0, 0.38);
+            backdrop-filter: blur(24px) saturate(140%);
+            -webkit-backdrop-filter: blur(24px) saturate(140%);
+            box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.09) inset, 0 1px 8px rgba(0, 0, 0, 0.55);
+            border: 0.5px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            /* critical: let dropdown overflow the bar */
+            overflow: visible;
+        }
+
+        /* inner-pill base */
+        .ctrl {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.06);
+            border: 0.5px solid rgba(255, 255, 255, 0.10);
+            border-radius: 10px;
+        }
+
+        /* ── Color pill ── */
+        .color-pill {
+            gap: 8px;
+            padding: 4px;
+            flex-shrink: 0;
+        }
+
+        .color-pill input[type="color"] {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            padding: 0;
+            border-radius: 6px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .color-pill input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .color-pill input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 6px;
+        }
+
+        .hex-input {
+            background: none;
+            border: none;
+            outline: none;
+            color: rgba(255, 255, 255, 0.88);
+            font-family: monospace;
+            font-size: 13px;
+            width: 72px;
+            caret-color: white;
+        }
+
+        .hex-input::placeholder {
+            color: rgba(255, 255, 255, 0.28);
+        }
+
+        /* ── Dropdown ── */
+        .dropdown-wrap {
+            position: relative;
+            flex: 1;
+            min-width: 0;
+            /* give it stacking context so z-index works */
+            z-index: 10;
+        }
+
+        .dropdown-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            /* fill full height of the bar via align-items:stretch */
+            width: 100%;
+            height: 100%;
+            padding: 0 12px;
+            cursor: pointer;
+            user-select: none;
+            color: rgba(255, 255, 255, 0.80);
+            font-size: 13px;
+            font-family: "Google Sans", sans-serif;
+            background: rgba(255, 255, 255, 0.06);
+            border: 0.5px solid rgba(255, 255, 255, 0.10);
+            border-radius: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .dropdown-trigger-label {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .dropdown-trigger svg {
+            flex-shrink: 0;
+            transition: transform 0.2s;
+        }
+
+        .dropdown-trigger.open svg {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            background: rgba(16, 15, 15, 0.94);
+            backdrop-filter: blur(28px) saturate(160%);
+            -webkit-backdrop-filter: blur(28px) saturate(160%);
+            border: 0.5px solid rgba(255, 255, 255, 0.10);
+            border-radius: 12px;
+            box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.09) inset, 0 1px 8px rgba(0, 0, 0, 0.55);
+            display: none;
+            padding: 4px;
+        }
+
+        .dropdown-menu.open {
+            display: block;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.70);
+            font-size: 13px;
+            transition: background 0.12s;
+            font-family: monospace;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .dropdown-item.all-item {
+            font-family: "Google Sans", sans-serif;
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.07);
+            margin-bottom: 2px;
+            padding-bottom: 10px;
+            color: rgba(255, 255, 255, 0.88);
+        }
+
+        .checkbox {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1.5px solid rgba(255, 255, 255, 0.22);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: border-color 0.15s, background 0.15s;
+        }
+
+        .checkbox.checked {
+            border-color: rgba(255, 255, 255, 0.55);
+            background: rgba(255, 255, 255, 0.11);
+        }
+
+        .checkbox.checked::after {
+            content: '';
+            width: 8px;
+            height: 5px;
+            border-left: 1.5px solid white;
+            border-bottom: 1.5px solid white;
+            transform: rotate(-45deg) translateY(-1px);
+        }
+
+        /* ── Generate button ── */
+        .gen-btn {
+            background: rgba(131, 131, 131, 0.09);
+            border: 0.5px solid rgba(255, 255, 255, 0.13);
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.88);
+            font-family: "Google Sans", sans-serif;
+            font-size: 13px;
+            /* no fixed height — stretches with bar */
+            padding: 0 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+            box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.09) inset;
+            transition: background 0.15s;
+        }
+
+        .gen-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .gen-btn:active {
+            background: rgba(255, 255, 255, 0.06);
+            transform: scale(0.98);
+        }
+
+        /* ── Palette card ── */
+        .palette-card {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 860px;
+            padding: 10px;
+            display: none;
+            background: rgba(0, 0, 0, 0.38);
+            backdrop-filter: blur(24px) saturate(140%);
+            -webkit-backdrop-filter: blur(24px) saturate(140%);
+            box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.09) inset, 0 1px 8px rgba(0, 0, 0, 0.55);
+            border: 0.5px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+        }
+
+        .palette-card.visible {
+            display: block;
+        }
+
+        /* ── Horizontal swatches ── */
+        .swatches {
+            display: flex;
+            flex-direction: row;
+            border-radius: 10px;
+            overflow: hidden;
+            width: 100%;
+            height: 130px;
+        }
+
+        .swatch-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 10px;
+            gap: 3px;
+            cursor: pointer;
+            position: relative;
+            transition: flex 0.20s cubic-bezier(.25, .8, .25, 1);
+            overflow: hidden;
+        }
+
+        .swatch-col:hover {
+            flex: 1.7;
+        }
+
+        .swatch-shade,
+        .swatch-hex {
+            font-size: 10.5px;
+            opacity: 0;
+            transition: opacity 0.15s;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .swatch-shade {
+            font-family: "Google Sans", sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+
+        .swatch-hex {
+            font-family: monospace;
+        }
+
+        .swatch-col:hover .swatch-shade,
+        .swatch-col:hover .swatch-hex {
+            opacity: 1;
+        }
+
+        /* "Copied" flash overlay */
+        .copied-flash {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-family: "Google Sans", sans-serif;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s;
+        }
+
+        .swatch-col.copied .copied-flash {
+            opacity: 1;
+        }
+
+        .swatch-col.copied .swatch-shade,
+        .swatch-col.copied .swatch-hex {
+            opacity: 0;
+        }
+
+        /* export */
+        .export-row {
+            display: flex;
+            gap: 8px;
+            padding: 10px 2px 2px;
+        }
+
+        .export-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 0.5px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.50);
+            font-family: "Google Sans", sans-serif;
+            font-size: 12px;
+            padding: 6px 14px;
+            cursor: pointer;
+            transition: background 0.12s, color 0.12s;
+        }
+
+        .export-btn:hover {
+            background: rgba(255, 255, 255, 0.10);
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        /* toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(16, 15, 15, 0.94);
+            backdrop-filter: blur(16px);
+            border: 0.5px solid rgba(255, 255, 255, 0.10);
+            border-radius: 10px;
+            padding: 8px 18px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.82);
+            font-family: "Google Sans", sans-serif;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            z-index: 99999;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 640px) {
+            .controls-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+                padding: 12px;
+            }
+
+            .color-pill,
+            .dropdown-wrap,
+            .gen-btn {
+                width: 100%;
+            }
+
+            .gen-btn {
+                padding: 10px;
+            }
+
+            /* dropdown should behave like block instead of absolute */
+            .dropdown-menu {
+                position: static;
+                margin-top: 6px;
+            }
+
+            /* fix trigger height in vertical mode */
+            .dropdown-trigger {
+                height: auto;
+                padding: 10px 12px;
+            }
+        }
+    </style>
+    <title>Shady</title>
+</head>
+
+<body>
+    <main class="main">
+        <div class="logo">
+            <span class="logo-text">Shady</span>
+        </div>
+
+        <div class="controls-bar">
+            <!-- Colour input -->
+            <div class="ctrl color-pill">
+                <input type="color" id="colorPicker" value="#6366f1">
+                <input class="hex-input" type="text" id="hexInput" value="#6366f1" maxlength="7" placeholder="#rrggbb"
+                    spellcheck="false">
+            </div>
+
+            <!-- Shade multiselect -->
+            <div class="dropdown-wrap" id="dropdownWrap">
+                <div class="dropdown-trigger" id="dropdownTrigger">
+                    <span class="dropdown-trigger-label" id="triggerLabel">All shades</span>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M3 5L7 9L11 5" stroke="rgba(255,255,255,0.45)" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <div class="dropdown-item all-item" id="allItem">
+                        <div class="checkbox checked" id="cb-all"></div>
+                        <span>All shades</span>
+                    </div>
+                    <!-- shade rows injected by JS -->
+                </div>
+            </div>
+
+            <!-- Generate -->
+            <button class="gen-btn" onclick="generate()">Generate palette</button>
+        </div>
+
+        <div class="palette-card" id="paletteCard">
+            <div class="swatches" id="swatchesWrap"></div>
+            <div class="export-row">
+                <button class="export-btn" onclick="exportCss()">Copy CSS variables</button>
+                <button class="export-btn" onclick="exportJson()">Copy JSON</button>
+            </div>
+        </div>
+    </main>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const SHADE_KEYS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900];
+        const MIX = {
+            50: { dir: 'light', t: 0.85 },
+            100: { dir: 'light', t: 0.70 },
+            200: { dir: 'light', t: 0.55 },
+            300: { dir: 'light', t: 0.38 },
+            400: { dir: 'light', t: 0.20 },
+            500: { dir: 'base', t: 0 },
+            600: { dir: 'dark', t: 0.15 },
+            700: { dir: 'dark', t: 0.35 },
+            800: { dir: 'dark', t: 0.55 },
+            900: { dir: 'dark', t: 0.68 },
+        };
+
+        let selectedShades = new Set(SHADE_KEYS);
+        let lastSwatches = [];
+
+        /* ── Build dropdown items ── */
+        const dropMenu = document.getElementById('dropdownMenu');
+        document.getElementById('allItem').addEventListener('click', toggleAll);
+
+        SHADE_KEYS.forEach(shade => {
+            const item = document.createElement('div');
+            item.className = 'dropdown-item';
+            item.dataset.value = shade;
+            item.innerHTML = `<div class="checkbox checked" id="cb-${shade}"></div><span>${shade}</span>`;
+            item.addEventListener('click', () => {
+                if (selectedShades.has(shade)) selectedShades.delete(shade);
+                else selectedShades.add(shade);
+                syncCheckboxes(); updateLabel();
+            });
+            dropMenu.appendChild(item);
+        });
+
+        /* ── Dropdown toggle ── */
+        const trigger = document.getElementById('dropdownTrigger');
+        trigger.addEventListener('click', e => {
+            e.stopPropagation();
+            trigger.classList.toggle('open');
+            dropMenu.classList.toggle('open');
+        });
+        document.addEventListener('click', () => {
+            trigger.classList.remove('open');
+            dropMenu.classList.remove('open');
+        });
+        dropMenu.addEventListener('click', e => e.stopPropagation());
+
+        function toggleAll() {
+            if (selectedShades.size === SHADE_KEYS.length) selectedShades.clear();
+            else SHADE_KEYS.forEach(s => selectedShades.add(s));
+            syncCheckboxes(); updateLabel();
+        }
+        function syncCheckboxes() {
+            SHADE_KEYS.forEach(s => document.getElementById('cb-' + s).classList.toggle('checked', selectedShades.has(s)));
+            document.getElementById('cb-all').classList.toggle('checked', selectedShades.size === SHADE_KEYS.length);
+        }
+        function updateLabel() {
+            const lbl = document.getElementById('triggerLabel');
+            if (!selectedShades.size) { lbl.textContent = 'Select shades'; return; }
+            if (selectedShades.size === SHADE_KEYS.length) { lbl.textContent = 'All shades'; return; }
+            lbl.textContent = SHADE_KEYS.filter(s => selectedShades.has(s)).join(', ');
+        }
+
+        /* ── Colour math ── */
+        function hexToRgb(hex) {
+            hex = hex.replace('#', '');
+            if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+            return [parseInt(hex.slice(0, 2), 16), parseInt(hex.slice(2, 4), 16), parseInt(hex.slice(4, 6), 16)];
+        }
+        function rgbToHex([r, g, b]) { return '#' + [r, g, b].map(v => Math.round(v).toString(16).padStart(2, '0')).join(''); }
+        function lerp(a, b, t) { return a + (b - a) * t; }
+        function shadeRgb(base, shade) {
+            const { dir, t } = MIX[shade];
+            if (dir === 'base') return [...base];
+            if (dir === 'light') return base.map(c => lerp(c, 255, t));
+            return base.map(c => lerp(c, 0, t));
+        }
+        function contrast(hex) {
+            const [r, g, b] = hexToRgb(hex);
+            return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.55 ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.82)';
+        }
+
+        /* ── Generate ── */
+        function generate() {
+            const raw = document.getElementById('hexInput').value.trim();
+            const hex = raw.startsWith('#') ? raw : '#' + raw;
+            if (!/^#[0-9a-fA-F]{6}$/.test(hex)) { showToast('Enter a valid 6-digit hex colour'); return; }
+            if (!selectedShades.size) { showToast('Select at least one shade'); return; }
+
+            const base = hexToRgb(hex);
+            const keys = SHADE_KEYS.filter(s => selectedShades.has(s));
+            lastSwatches = keys.map(shade => {
+                const rgb = shadeRgb(base, shade).map(Math.round);
+                return { shade, hex: rgbToHex(rgb), rgb: `rgb(${rgb[0]},${rgb[1]},${rgb[2]})` };
+            });
+
+            renderSwatches();
+        }
+
+        function renderSwatches() {
+            const wrap = document.getElementById('swatchesWrap');
+            wrap.innerHTML = '';
+
+            lastSwatches.forEach(({ shade, hex, rgb }) => {
+                const fg = contrast(hex);
+                const col = document.createElement('div');
+                col.className = 'swatch-col';
+                col.style.background = hex;
+                col.innerHTML = `
+            <div class="copied-flash" style="color:${fg}">Copied!</div>
+            <div class="swatch-shade" style="color:${fg}">${shade}</div>
+            <div class="swatch-hex"   style="color:${fg}">${hex.toUpperCase()}</div>
+        `;
+                col.addEventListener('click', () => {
+                    navigator.clipboard.writeText(hex.toUpperCase()).then(() => {
+                        col.classList.add('copied');
+                        showToast('Copied ' + hex.toUpperCase());
+                        setTimeout(() => col.classList.remove('copied'), 1100);
+                    });
+                });
+                wrap.appendChild(col);
+            });
+
+            document.getElementById('paletteCard').classList.add('visible');
+        }
+
+        /* ── Export ── */
+        function exportCss() {
+            const vars = lastSwatches.map(({ shade, hex }) => `  --color-${shade}: ${hex.toUpperCase()};`).join('\n');
+            navigator.clipboard.writeText(`:root {\n${vars}\n}`).then(() => showToast('CSS variables copied'));
+        }
+        function exportJson() {
+            const obj = {};
+            lastSwatches.forEach(({ shade, hex, rgb }) => { obj[shade] = { hex: hex.toUpperCase(), rgb }; });
+            navigator.clipboard.writeText(JSON.stringify(obj, null, 2)).then(() => showToast('JSON copied'));
+        }
+
+        /* ── Colour inputs sync ── */
+        const picker = document.getElementById('colorPicker');
+        const hexInp = document.getElementById('hexInput');
+        picker.addEventListener('input', e => { hexInp.value = e.target.value; });
+        hexInp.addEventListener('input', e => {
+            const v = e.target.value.trim();
+            if (/^#[0-9a-fA-F]{6}$/.test(v)) picker.value = v;
+        });
+        hexInp.addEventListener('keydown', e => { if (e.key === 'Enter') generate(); });
+
+        /* ── Toast ── */
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg; t.style.opacity = '1';
+            setTimeout(() => { t.style.opacity = '0'; }, 1800);
+        }
+
+        generate();
+    </script>
+</body>
+
+</html>
